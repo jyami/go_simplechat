@@ -13,14 +13,19 @@ func main() {
 	}
 	defer listener.Close()
 
-	conn, err := listener.Accept()
-	if err != nil {
-		fmt.Printf("Accept error: %s\n", err)
-		return
-	}
-	defer conn.Close()
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Printf("Accept error: %s\n", err)
+			return
+		}
+		defer conn.Close()
 
-	fmt.Println("クライアントからの受信メッセージ:")
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
 	buf := make([]byte, 1024)
 	for {
 		n, err := conn.Read(buf)
@@ -31,5 +36,6 @@ func main() {
 			fmt.Printf("Read error: %s\n", err)
 		}
 		fmt.Print(string(buf[:n]))
+		conn.Write(buf)
 	}
 }
