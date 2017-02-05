@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"os"
 )
@@ -13,29 +14,45 @@ func main() {
 		fmt.Printf("connection error: %s\n", err)
 		return
 	}
-	defer conn.Close()
+	//defer conn.Close()
 
-	readbuf := make([]byte, 1024)
+	fmt.Println("a")
+	go readFromServer(conn)
+	fmt.Println("b")
+	writeToServer(conn)
+	fmt.Println("c")
+}
 
+func writeToServer(conn net.Conn) {
+	fmt.Println("writeToServer start")
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		t := scanner.Text()
 		if t == "exit" {
+			conn.Close()
 			break
 		}
 		conn.Write([]byte(t))
+	}
+	fmt.Println("writeToServer end")
+}
 
-		n, err := conn.Read(readbuf)
+func readFromServer(conn net.Conn) {
+	fmt.Println("readFromServer start")
+	buf := make([]byte, 1024)
+	for {
+		n, err := conn.Read(buf)
 		if n == 0 {
-			break
+			//break
 		}
-		fmt.Println(n)
-		if err != nil {
+		if err == io.EOF {
+			fmt.Printf("conn closed:\n")
+			break
+		} else if err != nil {
 			fmt.Printf("Read error: %s\n", err)
 		}
-		fmt.Println(string(readbuf[:n]))
+		s := string(buf[:n])
+		fmt.Printf("%s¥n", s)
 	}
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
-	}
+	fmt.Println("readFromServer end")
 }
