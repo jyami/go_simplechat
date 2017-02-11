@@ -14,13 +14,9 @@ func main() {
 		fmt.Printf("connection error: %s\n", err)
 		return
 	}
-	//defer conn.Close()
 
-	fmt.Println("a")
 	go readFromServer(conn)
-	fmt.Println("b")
 	writeToServer(conn)
-	fmt.Println("c")
 }
 
 func writeToServer(conn net.Conn) {
@@ -52,7 +48,7 @@ func readFromServer(conn net.Conn) {
 			fmt.Printf("Read error: %s\n", err)
 		}
 		s := string(buf[:n])
-		fmt.Printf("%s¥n", s)
+		fmt.Printf("%s\n", s)
 	}
 	fmt.Println("readFromServer end")
 }
